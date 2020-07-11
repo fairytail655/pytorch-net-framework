@@ -1,3 +1,7 @@
 # pytroch-net-framework
-**run command example**:  
-&emsp;python main.py --model=mobilenet_v2 --save=mobilenet_v2 --dataset=mnist --input_size=28
+###train:
+&emsp;python main.py --model="model_name" --save="model_name" --dataset="dataset_name" --input_size=image_size
+###evaluate:
+&emsp;python main.py --model="model_name" --save="model_name" --e="model_path"
+###re-train:
+&emsp;python main.py --model="model_name" --save="model_name" --dataset="dataset_name" --input_size=image_size --resume="checkpoint_path"

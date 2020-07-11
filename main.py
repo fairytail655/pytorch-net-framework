@@ -31,14 +31,14 @@ parser.add_argument('--results_dir', metavar='RESULTS_DIR', default='./results',
                     help='results dir')
 parser.add_argument('--save', metavar='SAVE', default='test',
                     help='saved folder')
-parser.add_argument('--dataset', metavar='DATASET', default='mnist',
+parser.add_argument('--dataset', metavar='DATASET', default='cifar10',
                     help='dataset name or folder')
 parser.add_argument('--model', '-a', metavar='MODEL', default='mobilenet_v2',
                     choices=model_names,
                     help='model architecture: ' +
                     ' | '.join(model_names) +
                     ' (default: lenet)')
-parser.add_argument('--input_size', type=int, default='28',
+parser.add_argument('--input_size', type=int, default='32',
                     help='image input size')
 parser.add_argument('--model_config', default='',
                     help='additional architecture configuration')
@@ -52,7 +52,7 @@ parser.add_argument('--epochs', default=20, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('-b', '--batch-size', default=256, type=int,
+parser.add_argument('-b', '--batch-size', default=200, type=int,
                     metavar='N', help='mini-batch size (default: 256)')
 parser.add_argument('--optimizer', default='SGD', type=str, metavar='OPT',
                     help='optimizer function used')
@@ -71,6 +71,7 @@ parser.add_argument('-e', '--evaluate', type=str, metavar='FILE',
 
 def main():
     global args, best_prec
+    global progress, task2, task3
     best_prec = 0
     args = parser.parse_args()
 
@@ -117,15 +118,15 @@ def main():
                      args.evaluate, checkpoint['epoch'])
     elif args.resume:
         checkpoint_file = args.resume
-        if os.path.isdir(checkpoint_file):
-            results.load(os.path.join(checkpoint_file, 'results.csv'))
-            checkpoint_file = os.path.join(
-                checkpoint_file, 'model_best.pth.tar')
+        # if os.path.isdir(checkpoint_file):
+        #     results.load(os.path.join(checkpoint_file, 'results.csv'))
+        #     checkpoint_file = os.path.join(
+        #         checkpoint_file, 'checkpoint.pth.tar')
         if os.path.isfile(checkpoint_file):
             logging.info("loading checkpoint '%s'", args.resume)
             checkpoint = torch.load(checkpoint_file)
             args.start_epoch = checkpoint['epoch'] - 1
-            best_prec1 = checkpoint['best_prec1']
+            best_prec = checkpoint['best_prec']
             model.load_state_dict(checkpoint['state_dict'])
             logging.info("loaded checkpoint '%s' (epoch %s)",
                          checkpoint_file, checkpoint['epoch'])
@@ -164,29 +165,34 @@ def main():
         num_workers=args.workers, pin_memory=True)
     logging.info('validate dataset size: %d', len(val_data))
 
-    if args.evaluate:
-        val_loss, val_prec1 = validate(val_loader, model, criterion, 0)
-        logging.info('Evaluate {0}\t'
-                     'Validation Loss {val_loss:.4f} \t'
-                     'Validation Prec@1 {val_prec1:.3f} \t'
-                     .format(args.evaluate, val_loss=val_loss, val_prec1=val_prec1))
-        return
-
-    optimizer = torch.optim.SGD(model.parameters(), lr=args.lr)
-    logging.info('training regime: %s', regime)
-
     # print net struct
     if args.dataset == 'mnist':
         summary(model, (1, 28, 28))
     elif args.dataset == 'cifar10':
         summary(model, (3, 32, 32))
 
+    if args.evaluate:
+        with Progress("[progress.description]{task.description}{task.completed}/{task.total}",
+                    BarColumn(),
+                    "[progress.percentage]{task.percentage:>3.0f}%",
+                    TimeRemainingColumn(),
+                    auto_refresh=False) as progress:
+            task3 = progress.add_task("[yellow]validating:", total=math.ceil(len(val_data)/args.batch_size))
+            val_loss, val_prec1 = validate(val_loader, model, criterion, 0)
+            logging.info('Evaluate {0}\t'
+                        'Validation Loss {val_loss:.4f} \t'
+                        'Validation Prec@1 {val_prec1:.3f} \t'
+                        .format(args.evaluate, val_loss=val_loss, val_prec1=val_prec1))
+        return
+
+    optimizer = torch.optim.SGD(model.parameters(), lr=args.lr)
+    logging.info('training regime: %s', regime)
+
     # restore results
     train_loss_list, train_prec_list = [], []
     val_loss_list, val_prec_list = [], []
 
     # print progressor
-    global progress, task2, task3
     with Progress("[progress.description]{task.description}{task.completed}/{task.total}",
                   BarColumn(),
                   "[progress.percentage]{task.percentage:>3.0f}%",
@@ -195,6 +201,9 @@ def main():
         task1 = progress.add_task("[red]epoch:", total=args.epochs)
         task2 = progress.add_task("[blue]training:", total=math.ceil(len(train_data)/args.batch_size))
         task3 = progress.add_task("[yellow]validating:", total=math.ceil(len(val_data)/args.batch_size))
+
+        for i in range(args.start_epoch):
+            progress.update(task1, advance=1, refresh=True)
 
         for epoch in range(args.start_epoch, args.epochs):
             start = time.time()
@@ -305,8 +314,9 @@ def forward(data_loader, model, criterion, epoch=0, training=True, optimizer=Non
         #                      data_time=data_time, loss=losses, top1=top1))
 
     if not training:
-        progress.update(task2, completed=0, refresh=True)
-        progress.update(task3, completed=0, refresh=True)
+        progress.update(task3, completed=0)
+    else:
+        progress.update(task2, completed=0)
 
     return losses.avg, precisions.avg
 
