@@ -1,1 +1,3 @@
-/result
+/results
+/__pycache__
+/models/__pycache__
