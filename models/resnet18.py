@@ -88,7 +88,7 @@ class ResNet(nn.Module):
         self.fc = nn.Linear(512 * block.expansion, num_classes)
 
         self.regime = {
-            0: { 'optimizer': 'Adam', 'lr': 1e-2},
+            0: { 'optimizer': 'SGD', 'lr': 1e-1, 'momentum': 0.9, 'weight_decay': 5e-4},
         }
 
         for m in self.modules():
