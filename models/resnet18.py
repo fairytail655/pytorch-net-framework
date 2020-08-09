@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torchvision.transforms as transforms
 
 __all__ = ['resnet18']
 
@@ -89,7 +90,24 @@ class ResNet(nn.Module):
 
         self.regime = {
             0: { 'optimizer': 'SGD', 'lr': 1e-1, 'momentum': 0.9, 'weight_decay': 5e-4},
+            135: { 'optimizer': 'SGD', 'lr': 1e-2, 'momentum': 0.9, 'weight_decay': 5e-4},
+            185: { 'optimizer': 'SGD', 'lr': 1e-3, 'momentum': 0.9, 'weight_decay': 5e-4},
         }
+
+        self.input_transform = {
+            'train': transforms.Compose([
+                transforms.RandomCrop(32, padding=4),  #先四周填充0，在吧图像随机裁剪成32*32
+                transforms.RandomHorizontalFlip(),  #图像一半的概率翻转，一半的概率不翻转
+                transforms.ToTensor(),
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)), #R,G,B每层的归一化用到的均值和方差
+                                # normalize
+            ]),
+            'eval': transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+                # normalize
+            ])
+        }    
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
