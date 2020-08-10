@@ -4,3 +4,4 @@ from .MobileNetV2 import *
 from .mobileNetV3 import *
 from .resnet import *
 from .resnet20 import *
+from .resnet20_binary import *
