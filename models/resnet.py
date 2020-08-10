@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 
-__all__ = ['resnet18', 'resnet50']
+__all__ = ['resnet18', 'resnet20', 'resnet50']
 
 def conv3x3(in_planes, out_planes, stride=1, groups=1, dilation=1):
     """3x3 convolution with padding"""
@@ -235,6 +235,23 @@ def resnet18(**kwargs):
         in_dim = 3
 
     return ResNet(BasicBlock, [2, 2, 2, 2], in_dim=in_dim, num_classes=num_classes)
+
+def resnet20(**kwargs):
+    """ResNet-20 model from
+    `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+    """
+    datasets = kwargs.get('dataset', 'mnist')
+    if datasets == 'mnist':
+        num_classes = 10
+        in_dim = 1
+    elif datasets == 'cifar10':
+        num_classes = 10
+        in_dim = 3
+
+    return ResNet(BasicBlock, [2, 2, 2, 3], in_dim=in_dim, num_classes=num_classes)
 
 def resnet50(**kwargs):
     r"""ResNet-50 model from
