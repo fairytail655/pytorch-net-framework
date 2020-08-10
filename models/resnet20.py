@@ -93,15 +93,14 @@ class ResNet_cifar10(ResNet):
     def __init__(self, num_classes=10, in_dim=3, block=BasicBlock):
         super(ResNet_cifar10, self).__init__()
         self.inplanes = 16
-        n = int((depth - 2) / 6)
         self.conv1 = nn.Conv2d(in_dim, 16, kernel_size=3, stride=1, padding=1,
                                bias=False)
         self.bn1 = nn.BatchNorm2d(16)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = lambda x: x
-        self.layer1 = self._make_layer(block, 16, n)
-        self.layer2 = self._make_layer(block, 32, n, stride=2)
-        self.layer3 = self._make_layer(block, 64, n, stride=2)
+        self.layer1 = self._make_layer(block, 16, 3)
+        self.layer2 = self._make_layer(block, 32, 3, stride=2)
+        self.layer3 = self._make_layer(block, 64, 3, stride=2)
         self.layer4 = lambda x: x
         self.avgpool = nn.AvgPool2d(8)
         self.fc = nn.Linear(64, num_classes)
@@ -130,7 +129,7 @@ class ResNet_cifar10(ResNet):
             ])
         }    
 
-def resnet(**kwargs):
+def resnet20(**kwargs):
     datasets = kwargs.get('dataset', 'mnist')
     if datasets == 'mnist':
         num_classes = 10
