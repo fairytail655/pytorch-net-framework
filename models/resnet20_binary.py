@@ -108,7 +108,7 @@ class ResNet(nn.Module):
 
 class ResNet_cifar10(ResNet):
 
-    def __init__(self, num_classes=10, block=BasicBlock, in_dim=in_dim, depth=20):
+    def __init__(self, num_classes=10, block=BasicBlock, in_dim=3, depth=20):
         super(ResNet_cifar10, self).__init__()
         self.inflate = 1
         self.inplanes = 16*self.inflate
