@@ -145,6 +145,20 @@ class ResNet_cifar10(ResNet):
             220: {'lr': 1e-5}
         }
 
+        self.input_transform = {
+            'train': transforms.Compose([
+                transforms.RandomCrop(32, padding=4),  #先四周填充0，在吧图像随机裁剪成32*32
+                transforms.RandomHorizontalFlip(),  #图像一半的概率翻转，一半的概率不翻转
+                transforms.ToTensor(),
+                transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)), #R,G,B每层的归一化用到的均值和方差
+                                # normalize
+            ]),
+            'eval': transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
+                # normalize
+            ])
+        }    
 
 def resnet20_binary(**kwargs):
     datasets = kwargs.get('dataset', 'mnist')
