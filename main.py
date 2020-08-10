@@ -205,6 +205,7 @@ def main():
         for i in range(args.start_epoch):
             progress.update(task1, advance=1, refresh=True)
 
+        begin = time.time()
         for epoch in range(args.start_epoch, args.epochs):
             start = time.time()
             optimizer = adjust_optimizer(optimizer, epoch, regime)
@@ -248,6 +249,10 @@ def main():
 
             # update progressor
             progress.update(task1, advance=1, refresh=True)
+
+    logging.info('----------------------------------------------------------------\n'
+                'Whole Cost Time: {2:.2f}s      Best Validation Prec {val_prec1:.3f}'
+                '-----------------------------------------------------------------'.format(time.time()-begin, best_prec))
     
     epochs = list(range(args.epochs))
     draw2(epochs, train_loss_list, val_loss_list, train_prec_list, val_prec_list)
