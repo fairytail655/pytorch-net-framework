@@ -118,14 +118,14 @@ def main():
                      args.evaluate, checkpoint['epoch'])
     elif args.resume:
         checkpoint_file = args.resume
-        # if os.path.isdir(checkpoint_file):
-        #     results.load(os.path.join(checkpoint_file, 'results.csv'))
-        #     checkpoint_file = os.path.join(
-        #         checkpoint_file, 'checkpoint.pth.tar')
+        if os.path.isdir(checkpoint_file):
+            results.load(os.path.join(checkpoint_file, 'results.csv'))
+            checkpoint_file = os.path.join(
+                checkpoint_file, 'checkpoint.pth.tar')
         if os.path.isfile(checkpoint_file):
             logging.info("loading checkpoint '%s'", args.resume)
             checkpoint = torch.load(checkpoint_file)
-            args.start_epoch = checkpoint['epoch'] - 1
+            args.start_epoch = checkpoint['epoch']
             best_prec = checkpoint['best_prec']
             model.load_state_dict(checkpoint['state_dict'])
             logging.info("loaded checkpoint '%s' (epoch %s)",
