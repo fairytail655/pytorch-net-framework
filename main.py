@@ -251,7 +251,7 @@ def main():
             progress.update(task1, advance=1, refresh=True)
 
     logging.info('----------------------------------------------------------------\n'
-                'Whole Cost Time: {2:.2f}s      Best Validation Prec {val_prec1:.3f}'
+                'Whole Cost Time: {0:.2f}s      Best Validation Prec {1:.3f}\n'
                 '-----------------------------------------------------------------'.format(time.time()-begin, best_prec))
     
     epochs = list(range(args.epochs))
