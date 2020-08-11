@@ -130,19 +130,18 @@ class ResNet_cifar10(ResNet):
         self.fc = BinarizeLinear(64*self.inflate, num_classes)
 
         init_model(self)
-        #self.regime = {
-        #    0: {'optimizer': 'SGD', 'lr': 1e-1,
-        #        'weight_decay': 1e-4, 'momentum': 0.9},
-        #    81: {'lr': 1e-4},
-        #    122: {'lr': 1e-5, 'weight_decay': 0},
-        #    164: {'lr': 1e-6}
-        #}
+        # self.regime = {
+        #     0: {'optimizer': 'Adam', 'lr': 5e-3},
+        #     101: {'lr': 1e-3},
+        #     142: {'lr': 5e-4},
+        #     184: {'lr': 1e-4},
+        #     220: {'lr': 1e-5}
+        # }
         self.regime = {
             0: {'optimizer': 'Adam', 'lr': 5e-3},
-            101: {'lr': 1e-3},
-            142: {'lr': 5e-4},
-            184: {'lr': 1e-4},
-            220: {'lr': 1e-5}
+            50: {'lr': 1e-3},
+            100: {'lr': 1e-4},
+            150: {'lr': 1e-5}
         }
 
         self.input_transform = {
