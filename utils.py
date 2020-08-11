@@ -68,6 +68,7 @@ class ResultsLog(object):
     def load(self, path=None):
         path = path or self.path
         if os.path.isfile(path):
+            self.results = pd.DataFrame()
             self.results.read_csv(path)
 
     def show(self):
