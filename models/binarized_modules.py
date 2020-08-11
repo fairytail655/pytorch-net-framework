@@ -64,7 +64,7 @@ class BinarizeConv2d(nn.Conv2d):
 def SelfBinarize(tensor, epoch, is_training):
     if is_training == False:
         return tensor.sign()
-    else
+    else:
         return torch.tanh((epoch+1) * tensor)
 
 class SelfBinarizeLinear(nn.Linear):
