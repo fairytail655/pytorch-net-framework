@@ -1,8 +1,11 @@
-from models import *
 import torch
-from torchsummary import summary
+from models import *
 
-model = mobilenet_v2()
-device = torch.device('cuda')
-model = model.to(device)
-summary(model, (3, 32, 32))
+model_path = "C:\\Users\\26235\\Desktop\\code\\python\\pytorch-net-framework\\results\\SelfBinaring\\checkpoint.pth.tar"
+
+net = SelfBinaring()
+checkpoint = torch.load(model_path)
+net.load_state_dict(checkpoint['state_dict'])
+
+for name, param in net.named_parameters():
+    print(name)
