@@ -3,7 +3,7 @@ import torchvision.transforms as transforms
 import math
 from .binarized_modules import  SelfBinarizeConv2d, SelfBinarizeLinear, SelfTanh
 
-__all__ = ['self-binaring']
+__all__ = ['SelfBinaring']
 
 def Binaryconv3x3(in_planes, out_planes, stride=1):
     "3x3 convolution with padding"
@@ -12,7 +12,7 @@ def Binaryconv3x3(in_planes, out_planes, stride=1):
 
 def init_model(model):
     for m in model.modules():
-        if isinstance(m, BinarizeConv2d):
+        if isinstance(m, SelfBinarizeConv2d):
             n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
             m.weight.data.normal_(0, math.sqrt(2. / n))
         elif isinstance(m, nn.BatchNorm2d):
@@ -63,12 +63,14 @@ class ResNet(nn.Module):
 
     def __init__(self):
         super(ResNet, self).__init__()
+        self.is_training = True
+        self.epoch = 0
 
     def _make_layer(self, block, planes, blocks, stride=1,do_bntan=True):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(
-                BinarizeConv2d(self.inplanes, planes * block.expansion,
+                SelfBinarizeConv2d(self.inplanes, planes * block.expansion,
                           kernel_size=1, stride=stride, bias=False),
                 nn.BatchNorm2d(planes * block.expansion),
             )
@@ -82,6 +84,20 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        # x = input[0]
+        # is_training = input[1]
+        # epoch = input[2]
+        for m in self.modules():
+            if isinstance(m, SelfBinarizeConv2d):
+                m.is_training = self.is_training
+                m.epoch = self.epoch
+            elif isinstance(m, SelfBinarizeLinear):
+                m.is_training = self.is_training
+                m.epoch = self.epoch
+            elif isinstance(m, SelfTanh):
+                m.is_training = self.is_training
+                m.epoch = self.epoch
+
         x = self.conv1(x)
         x = self.maxpool(x)
         x = self.bn1(x)
@@ -89,7 +105,7 @@ class ResNet(nn.Module):
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
-        x = self.layer4(x)
+        # x = self.layer4(x)
 
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
@@ -105,33 +121,26 @@ class ResNet_cifar10(ResNet):
 
     def __init__(self, num_classes=10, block=BasicBlock, in_dim=3, depth=20):
         super(ResNet_cifar10, self).__init__()
-        self.inflate = 5
+        self.inflate = 1
         self.inplanes = 16*self.inflate
         n = int((depth - 2) / 6)
-        self.conv1 = BinarizeConv2d(in_dim, 16*self.inflate, kernel_size=3, stride=1, padding=1,
+        self.conv1 = SelfBinarizeConv2d(in_dim, 16*self.inflate, kernel_size=3, stride=1, padding=1,
                                bias=False)
         self.maxpool = lambda x: x
         self.bn1 = nn.BatchNorm2d(16*self.inflate)
-        self.tanh1 = nn.Hardtanh(inplace=True)
-        self.tanh2 = nn.Hardtanh(inplace=True)
+        self.tanh1 = SelfTanh()
+        # self.tanh2 = SelfTanh(inplace=True)
         self.layer1 = self._make_layer(block, 16*self.inflate, n)
         self.layer2 = self._make_layer(block, 32*self.inflate, n, stride=2)
         self.layer3 = self._make_layer(block, 64*self.inflate, n, stride=2,do_bntan=False)
-        self.layer4 = lambda x: x
+        # self.layer4 = lambda x: x
         self.avgpool = nn.AvgPool2d(8)
-        self.bn2 = nn.BatchNorm1d(64*self.inflate)
-        self.bn3 = nn.BatchNorm1d(10)
-        self.logsoftmax = nn.LogSoftmax()
-        self.fc = BinarizeLinear(64*self.inflate, num_classes)
+        # self.bn2 = nn.BatchNorm1d(64*self.inflate)
+        # self.bn3 = nn.BatchNorm1d(10)
+        # self.logsoftmax = nn.LogSoftmax()
+        self.fc = SelfBinarizeLinear(64*self.inflate, num_classes)
 
         init_model(self)
-        #self.regime = {
-        #    0: {'optimizer': 'SGD', 'lr': 1e-1,
-        #        'weight_decay': 1e-4, 'momentum': 0.9},
-        #    81: {'lr': 1e-4},
-        #    122: {'lr': 1e-5, 'weight_decay': 0},
-        #    164: {'lr': 1e-6}
-        #}
         self.regime = {
             0: {'optimizer': 'Adam', 'lr': 5e-3},
             101: {'lr': 1e-3},
@@ -155,8 +164,8 @@ class ResNet_cifar10(ResNet):
             ])
         }    
 
-def resnet20_binary(**kwargs):
-    datasets = kwargs.get('dataset', 'mnist')
+def SelfBinaring(**kwargs):
+    datasets = kwargs.get('dataset', 'cifar10')
     if datasets == 'mnist':
         num_classes = 10
         in_dim = 1

@@ -29,11 +29,11 @@ parser = argparse.ArgumentParser(description='PyTorch ConvNet Training')
 
 parser.add_argument('--results_dir', metavar='RESULTS_DIR', default='./results',
                     help='results dir')
-parser.add_argument('--save', metavar='SAVE', default='test',
+parser.add_argument('--save', metavar='SAVE', default='SelfBinaring',
                     help='saved folder')
 parser.add_argument('--dataset', metavar='DATASET', default='cifar10',
                     help='dataset name or folder')
-parser.add_argument('--model', '-a', metavar='MODEL', default='resnet20_binary',
+parser.add_argument('--model', '-a', metavar='MODEL', default='SelfBinaring',
                     choices=model_names,
                     help='model architecture: ' +
                     ' | '.join(model_names) +
@@ -48,11 +48,11 @@ parser.add_argument('--gpus', default='0',
                     help='gpus used for training - e.g 0,1,3')
 parser.add_argument('-j', '--workers', default=8, type=int, metavar='N',
                     help='number of data loading workers (default: 8)')
-parser.add_argument('--epochs', default=200, type=int, metavar='N',
+parser.add_argument('--epochs', default=250, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('-b', '--batch-size', default=256, type=int,
+parser.add_argument('-b', '--batch-size', default=128, type=int,
                     metavar='N', help='mini-batch size (default: 256)')
 parser.add_argument('--optimizer', default='SGD', type=str, metavar='OPT',
                     help='optimizer function used')
@@ -276,11 +276,17 @@ def forward(data_loader, model, criterion, epoch=0, training=True, optimizer=Non
                 input_var = Variable(inputs.type(args.type))
                 target_var = Variable(target)
                 # compute output
+                if args.model == 'SelfBinaring':
+                    model.is_training = False
+                    model.epoch = epoch
                 output = model(input_var)
         else:
             input_var = Variable(inputs.type(args.type))
             target_var = Variable(target)
             # compute output
+            if args.model == 'SelfBinaring':
+                model.is_training = True
+                model.epoch = epoch
             output = model(input_var)
 
         loss = criterion(output, target_var)

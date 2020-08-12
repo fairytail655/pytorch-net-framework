@@ -1,8 +1,12 @@
 import os
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
+import platform
 
-_DATASETS_MAIN_PATH = '/home/liu/Datasets'
+if platform.system() == 'Windows':
+    _DATASETS_MAIN_PATH = '/home/Datasets'
+else:
+    _DATASETS_MAIN_PATH = '/home/liu/Datasets'
 _dataset_path = {
     'cifar10': os.path.join(_DATASETS_MAIN_PATH, 'CIFAR10'),
     'cifar100': os.path.join(_DATASETS_MAIN_PATH, 'CIFAR100'),
