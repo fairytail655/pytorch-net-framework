@@ -8,4 +8,5 @@ checkpoint = torch.load(model_path)
 net.load_state_dict(checkpoint['state_dict'])
 
 for name, param in net.named_parameters():
-    print(name)
+    print(name, param.data)
+    break

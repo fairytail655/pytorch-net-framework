@@ -65,7 +65,7 @@ def SelfBinarize(tensor, epoch, is_training):
     if is_training == False:
         return tensor.sign()
     else:
-        return torch.tanh((epoch+1) * tensor)
+        return torch.tanh((int(epoch/20)+1) * tensor)
 
 class SelfBinarizeLinear(nn.Linear):
 

@@ -1,12 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-n = 1
-k = 1
+v = 4
+k = 0
 x = np.arange(-10, 10, 0.01)
-y = np.tanh(n*(x-k))
+y = np.tanh(v*(x-k))
+order = np.ones(x.shape, dtype=int)*2
+z = v*(1 - np.power(y, 2))
 
-plt.plot(x, y)
+plt.plot(x, z)
 plt.show()
-
-print(y)
