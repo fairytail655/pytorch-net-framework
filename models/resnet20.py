@@ -75,12 +75,10 @@ class ResNet(nn.Module):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
-        x = self.maxpool(x)
 
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
-        x = self.layer4(x)
 
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
@@ -92,20 +90,19 @@ class ResNet_cifar10(ResNet):
 
     def __init__(self, num_classes=10, in_dim=3, block=BasicBlock):
         super(ResNet_cifar10, self).__init__()
-        self.inplanes = 16
-        self.conv1 = nn.Conv2d(in_dim, 16, kernel_size=3, stride=1, padding=1,
+        self.inflate = 4
+        self.inplanes = 16*self.inflate
+        self.conv1 = nn.Conv2d(in_dim, self.inplanes, kernel_size=3, stride=1, padding=1,
                                bias=False)
-        self.bn1 = nn.BatchNorm2d(16)
+        self.bn1 = nn.BatchNorm2d(self.inplanes)
         self.relu = nn.ReLU(inplace=True)
-        self.maxpool = lambda x: x
-        self.layer1 = self._make_layer(block, 16, 3)
-        self.layer2 = self._make_layer(block, 32, 3, stride=2)
-        self.layer3 = self._make_layer(block, 64, 3, stride=2)
-        self.layer4 = lambda x: x
+        self.layer1 = self._make_layer(block, 16*self.inflate, 3)
+        self.layer2 = self._make_layer(block, 32*self.inflate, 3, stride=2)
+        self.layer3 = self._make_layer(block, 64*self.inflate, 3, stride=2)
         self.avgpool = nn.AvgPool2d(8)
-        self.fc = nn.Linear(64, num_classes)
+        self.fc = nn.Linear(64*self.inflate, num_classes)
 
-        init_model(self)
+        # init_model(self)
         self.regime = {
             0: {'optimizer': 'SGD', 'lr': 1e-1,
                 'weight_decay': 1e-4, 'momentum': 0.9},
@@ -130,7 +127,7 @@ class ResNet_cifar10(ResNet):
         }    
 
 def resnet20(**kwargs):
-    datasets = kwargs.get('dataset', 'mnist')
+    datasets = kwargs.get('dataset', 'cifar10')
     if datasets == 'mnist':
         num_classes = 10
         in_dim = 1

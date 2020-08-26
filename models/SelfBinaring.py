@@ -45,7 +45,7 @@ class BasicBlock(nn.Module):
         out = self.tanh1(out)
 
         out = self.conv2(out)
-
+        out = self.bn2(out)
 
         if self.downsample is not None:
             if residual.data.max()>1:
@@ -53,9 +53,8 @@ class BasicBlock(nn.Module):
             residual = self.downsample(residual)
 
         out += residual
-        if self.do_bntan:
-            out = self.bn2(out)
-            out = self.tanh2(out)
+        # if self.do_bntan:
+        out = self.tanh2(out)
 
         return out
 

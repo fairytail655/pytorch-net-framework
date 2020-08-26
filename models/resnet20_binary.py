@@ -38,7 +38,7 @@ class BasicBlock(nn.Module):
         self.bn2 = nn.BatchNorm2d(planes)
 
         self.downsample = downsample
-        self.do_bntan=do_bntan;
+        self.do_bntan=do_bntan
         self.stride = stride
 
     def forward(self, x):
@@ -50,16 +50,13 @@ class BasicBlock(nn.Module):
         out = self.tanh1(out)
 
         out = self.conv2(out)
-
+        out = self.bn2(out)
 
         if self.downsample is not None:
-            if residual.data.max()>1:
-                import pdb; pdb.set_trace()
             residual = self.downsample(residual)
 
         out += residual
         if self.do_bntan:
-            out = self.bn2(out)
             out = self.tanh2(out)
 
         return out
@@ -88,21 +85,15 @@ class ResNet(nn.Module):
 
     def forward(self, x):
         x = self.conv1(x)
-        x = self.maxpool(x)
         x = self.bn1(x)
         x = self.tanh1(x)
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
-        x = self.layer4(x)
 
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
-        # x = self.bn2(x)
-        # x = self.tanh2(x)
         x = self.fc(x)
-        # x = self.bn3(x)
-        # x = self.logsoftmax(x)
 
         return x
 
@@ -110,23 +101,18 @@ class ResNet_cifar10(ResNet):
 
     def __init__(self, num_classes=10, block=BasicBlock, in_dim=3, depth=20):
         super(ResNet_cifar10, self).__init__()
-        self.inflate = 5
+        self.inflate = 1
         self.inplanes = 16*self.inflate
         n = int((depth - 2) / 6)
         self.conv1 = BinarizeConv2d(in_dim, 16*self.inflate, kernel_size=3, stride=1, padding=1,
                                bias=False)
-        self.maxpool = lambda x: x
         self.bn1 = nn.BatchNorm2d(16*self.inflate)
         self.tanh1 = nn.Hardtanh(inplace=True)
         self.tanh2 = nn.Hardtanh(inplace=True)
         self.layer1 = self._make_layer(block, 16*self.inflate, n)
         self.layer2 = self._make_layer(block, 32*self.inflate, n, stride=2)
-        self.layer3 = self._make_layer(block, 64*self.inflate, n, stride=2,do_bntan=False)
-        self.layer4 = lambda x: x
+        self.layer3 = self._make_layer(block, 64*self.inflate, n, stride=2)
         self.avgpool = nn.AvgPool2d(8)
-        self.bn2 = nn.BatchNorm1d(64*self.inflate)
-        self.bn3 = nn.BatchNorm1d(10)
-        self.logsoftmax = nn.LogSoftmax()
         self.fc = BinarizeLinear(64*self.inflate, num_classes)
 
         init_model(self)

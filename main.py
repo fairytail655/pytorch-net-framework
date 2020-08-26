@@ -29,11 +29,11 @@ parser = argparse.ArgumentParser(description='PyTorch ConvNet Training')
 
 parser.add_argument('--results_dir', metavar='RESULTS_DIR', default='./results',
                     help='results dir')
-parser.add_argument('--save', metavar='SAVE', default='SelfBinaring',
+parser.add_argument('--save', metavar='SAVE', default='mobilenet_v2',
                     help='saved folder')
 parser.add_argument('--dataset', metavar='DATASET', default='cifar10',
                     help='dataset name or folder')
-parser.add_argument('--model', '-a', metavar='MODEL', default='SelfBinaring',
+parser.add_argument('--model', '-a', metavar='MODEL', default='mobilenet_v2',
                     choices=model_names,
                     help='model architecture: ' +
                     ' | '.join(model_names) +
@@ -52,7 +52,7 @@ parser.add_argument('--epochs', default=250, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('-b', '--batch-size', default=256, type=int,
+parser.add_argument('-b', '--batch-size', default=128, type=int,
                     metavar='N', help='mini-batch size (default: 256)')
 parser.add_argument('--optimizer', default='SGD', type=str, metavar='OPT',
                     help='optimizer function used')
